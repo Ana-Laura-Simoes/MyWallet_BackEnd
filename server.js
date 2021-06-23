@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import pg from 'pg';
-import joi from 'joi';
+import bcrypt from 'bcrypt';
 import dayjs from 'dayjs';
-import {RegisterSchema} from "./schemas/RegisterSchema.js"
+import {RegisterSchema} from "./schemas/RegisterSchema.js";
+import{SignUpSchema} from "./schemas/SignUpSchema.js";
+
 
 const app = express();
 app.use(cors());
@@ -44,6 +46,38 @@ async function HandleData(data,res,type){
     
     res.sendStatus(201);
 }
+
+
+app.post("/signUp", async(req,res)=>{
+const {name,email,password}=req.body;
+
+const errors = SignUpSchema.validate(req.body).error;
+console.log(errors)
+if(errors) {
+    return res.sendStatus(400);
+}
+
+const encryptedPassword = bcrypt.hashSync(password, 10);
+
+
+
+try{
+await connection.query(`
+INSERT INTO users
+(name, email, password)
+VALUES ($1, $2, $3)
+`,[name, email,encryptedPassword]);
+
+return res.sendStatus(201);
+}
+catch(e){
+    console.log(e);
+    return res.sendStatus(500);
+}
+
+});
+
+
 
 app.post("/entrance", async (req,res) => {
 HandleData(req.body,res,"entrance");
