@@ -19,63 +19,21 @@ const databaseConnection = {
   };
 const connection = new Pool(databaseConnection);
 
-
-
-
-let data=[];
-
-app.post("/entrance", async (req,res) => {
-
-let {value,description}=req.body;    
-let date=dayjs().format('DD/MM');   
-
-value=Number(value).toFixed(2)
-//console.log(value);
-
-const errors = RegisterSchema.validate(req.body).error;
-console.log(errors)
-if(errors) {
-    return res.sendStatus(400);
-}
-
-
-
-
-try{
-    data.push({date:date,value:value,description:description,type:"entrance"});
-    //console.log(data);
-
-    await connection.query(`INSERT INTO registers (description, value, type) VALUES ($1, $2, $3)`, [description, value, "entrance"]);
-    const result = await connection.query(`SELECT * FROM registers`, []);
-    console.log(result.rows);
-}catch(e){
-    console.log(e);
-    return res.sendStatus(500);
-}
-//console.log(value);
-
-res.sendStatus(201);
-});
-
-
-app.post("/exit", async (req,res) => {
-    let {value,description}=req.body;    
-    let date=dayjs().format('DD/MM');
-    value=Number(value).toFixed(2);
+async function HandleData(data,res,type){
+    let {value,description}=data;    
+    let date=dayjs().format('DD/MM');   
     
+    value=Number(value).toFixed(2)
+    //console.log(value);
     
-    const errors = RegisterSchema.validate(req.body).error;
+    const errors = RegisterSchema.validate(data).error;
     console.log(errors)
     if(errors) {
-    
         return res.sendStatus(400);
     }
     
     try{
-        data.push({date:date,value:value,description:description,type:"exit"});
-        //console.log(data);
-    
-        await connection.query(`INSERT INTO registers (description, value, type) VALUES ($1, $2, $3)`, [description, value, "exit"]);
+        await connection.query(`INSERT INTO registers (date, description, value, type) VALUES ($1, $2, $3, $4)`, [date, description, value, type]);
         const result = await connection.query(`SELECT * FROM registers`, []);
         console.log(result.rows);
     }catch(e){
@@ -85,19 +43,33 @@ app.post("/exit", async (req,res) => {
     //console.log(value);
     
     res.sendStatus(201);
+}
+
+app.post("/entrance", async (req,res) => {
+HandleData(req.body,res,"entrance");
+
+});
+
+
+app.post("/exit", async (req,res) => {
+    HandleData(req.body,res,"exit");
     });
 
 
 app.get("/menu", async (req,res) => {
     
     try{
-return res.send(data);
-    }catch{
-        return sendStatus(500);
+        const result = await connection.query(`SELECT * FROM registers`, []);    
+        const exits= result.rows.filter((r)=>{if(r.type==="exit")return r});
+        const entrances = result.rows.filter((r)=>{if(r.type==="entrance")return r});
+        const registers=[...exits,...entrances];
+
+        return res.send(registers);
+    }catch(e){
+        console.log(e)
+        return res.sendStatus(500);
     }
     //console.log(value);
-    
-    res.send("ok");
     });
 
 
