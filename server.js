@@ -37,7 +37,8 @@ async function HandleData(data,res,type,userId){
     }
     
     try{
-        await connection.query(`INSERT INTO registers ("userId", date, description, value, type) VALUES ($1, $2, $3, $4, $5)`, [userId, date, description, value, type]);
+        const Description=description[0].toUpperCase()+description.substr(1);
+        await connection.query(`INSERT INTO registers ("userId", date, description, value, type) VALUES ($1, $2, $3, $4, $5)`, [userId, date, Description, value, type]);
         const result = await connection.query(`SELECT * FROM registers`, []);
         
     }catch(e){
@@ -190,10 +191,25 @@ app.get("/menu", async (req,res) => {
     
   if(user){        
         const result = await connection.query(`SELECT * FROM registers WHERE "userId" = $1`, [user.id]);    
-        const exits= result.rows.filter((r)=>{if(r.type==="exit")return r});
-        const entrances = result.rows.filter((r)=>{if(r.type==="entrance")return r});
-        const registers=[...exits,...entrances];
+        let balance=0;
 
+        const exits= [];
+        result.rows.forEach((r)=>{
+            if(r.type==="exit") {
+                balance=balance-Number(r.value),
+                exits.push(r)
+            }});
+        const entrances = [];
+        
+        result.rows.forEach((r)=>{
+            if(r.type==="entrance") {
+                balance=balance+Number(r.value),
+                entrances.push(r)
+            }});
+
+console.log(balance);
+         
+        const registers={bankStatement:[...exits,...entrances],balance:balance};
         return res.send(registers);
     }
     else {
