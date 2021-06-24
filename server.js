@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import {RegisterSchema} from "./schemas/RegisterSchema.js";
 import{SignUpSchema} from "./schemas/SignUpSchema.js";
 import{SignInSchema} from "./schemas/SignInSchema.js";
+import { v4 as uuid } from 'uuid';
 
 
 const app = express();
@@ -22,12 +23,12 @@ const databaseConnection = {
   };
 const connection = new Pool(databaseConnection);
 
-async function HandleData(data,res,type){
+async function HandleData(data,res,type,userId){
     let {value,description}=data;    
     let date=dayjs().format('DD/MM');   
     
     value=Number(value).toFixed(2)
-    //console.log(value);
+    
     
     const errors = RegisterSchema.validate(data).error;
     console.log(errors)
@@ -36,9 +37,9 @@ async function HandleData(data,res,type){
     }
     
     try{
-        await connection.query(`INSERT INTO registers (date, description, value, type) VALUES ($1, $2, $3, $4)`, [date, description, value, type]);
+        await connection.query(`INSERT INTO registers ("userId", date, description, value, type) VALUES ($1, $2, $3, $4, $5)`, [userId, date, description, value, type]);
         const result = await connection.query(`SELECT * FROM registers`, []);
-        console.log(result.rows);
+        
     }catch(e){
         console.log(e);
         return res.sendStatus(500);
@@ -53,8 +54,9 @@ app.post("/signUp", async(req,res)=>{
 const {name,email,password}=req.body;
 
 const errors = SignUpSchema.validate(req.body).error;
-console.log(errors)
+
 if(errors) {
+    console.log(errors)
     return res.sendStatus(400);
 }
 
@@ -94,16 +96,25 @@ if(errors) {
     `,[email]);
 
     const user = result.rows[0];
-    console.log(user);
+   
 
     if(result.rows.length>0 && bcrypt.compareSync(password, user.password)) {
+        
+        const token = uuid();
+
+        await connection.query(`
+        INSERT INTO sessions ("userId", token)
+        VALUES ($1, $2)
+      `, [user.id, token]);
+
         return res.send({
             id:user.id,
             name:user.name,
-            email:user.email
+            email:user.email,
+            token:token
         });
     } else {
-        return res.sendStatus(404);
+        return res.sendStatus(401);
     }
 }
 catch(e){
@@ -114,25 +125,80 @@ catch(e){
 
 
 app.post("/entrance", async (req,res) => {
-HandleData(req.body,res,"entrance");
+    const authorization = req.headers['authorization'];
+    const token = authorization?.replace('Bearer ', '');
+    
+    if(!token) return res.sendStatus(401);
+
+    const result = await connection.query(`
+    SELECT * FROM sessions
+    JOIN users
+    ON sessions."userId" = users.id
+    WHERE sessions.token = $1
+  `, [token]);
+
+  const user = result.rows[0];
+  
+  if(user) {
+    HandleData(req.body,res,"entrance",user.id);
+  } else {
+    res.sendStatus(401);
+  }
 
 });
 
 
 app.post("/exit", async (req,res) => {
-    HandleData(req.body,res,"exit");
+    const authorization = req.headers['authorization'];
+    const token = authorization?.replace('Bearer ', '');
+    
+    if(!token) return res.sendStatus(401);
+
+    const result = await connection.query(`
+    SELECT * FROM sessions
+    JOIN users
+    ON sessions."userId" = users.id
+    WHERE sessions.token = $1
+  `, [token]);
+
+  const user = result.rows[0];
+  
+  if(user) {
+    HandleData(req.body,res,"exit",user.id);
+  } else {
+    res.sendStatus(401);
+  }
     });
 
 
 app.get("/menu", async (req,res) => {
+    const authorization = req.headers['authorization'];
+    const token = authorization?.replace('Bearer ', '');
     
+    if(!token) return res.sendStatus(401);
+
     try{
-        const result = await connection.query(`SELECT * FROM registers`, []);    
+    const TokenResult = await connection.query(`
+    SELECT * FROM sessions
+    JOIN users
+    ON sessions."userId" = users.id
+    WHERE sessions.token = $1
+  `, [token]);
+
+  const user = TokenResult.rows[0];
+    
+    
+  if(user){        
+        const result = await connection.query(`SELECT * FROM registers WHERE "userId" = $1`, [user.id]);    
         const exits= result.rows.filter((r)=>{if(r.type==="exit")return r});
         const entrances = result.rows.filter((r)=>{if(r.type==="entrance")return r});
         const registers=[...exits,...entrances];
 
         return res.send(registers);
+    }
+    else {
+        res.sendStatus(401);
+      }
     }catch(e){
         console.log(e)
         return res.sendStatus(500);
