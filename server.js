@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import {RegisterSchema} from "./schemas/RegisterSchema.js";
 import{SignUpSchema} from "./schemas/SignUpSchema.js";
 import{SignInSchema} from "./schemas/SignInSchema.js";
+
 import { v4 as uuid } from 'uuid';
 
 
@@ -52,7 +53,7 @@ async function HandleData(data,res,type,userId){
 
 
 app.post("/signUp", async(req,res)=>{
-const {name,email,password}=req.body;
+const {name,email,password, confirmPasswor}=req.body;
 
 const errors = SignUpSchema.validate(req.body).error;
 
@@ -61,9 +62,15 @@ if(errors) {
     return res.sendStatus(400);
 }
 
+try{
+    const validation = await connection.query('SELECT * FROM users WHERE email = $1',[email]);
+    if(validation.rows.length!==0){
+        return res.sendStatus(409);
+    }
+
 const encryptedPassword = bcrypt.hashSync(password, 10);
 
-try{
+
 await connection.query(`
 INSERT INTO users
 (name, email, password)
@@ -88,8 +95,7 @@ if(errors) {
     console.log(errors)
     return res.sendStatus(400);
 }
-
-    
+ 
     try{
     const result = await connection.query(`
         SELECT * FROM users
@@ -98,7 +104,6 @@ if(errors) {
 
     const user = result.rows[0];
    
-
     if(result.rows.length>0 && bcrypt.compareSync(password, user.password)) {
         
         const token = uuid();
@@ -172,7 +177,7 @@ app.post("/exit", async (req,res) => {
     });
 
 
-app.get("/menu", async (req,res) => {
+app.get("/home", async (req,res) => {
     const authorization = req.headers['authorization'];
     const token = authorization?.replace('Bearer ', '');
     
@@ -206,8 +211,6 @@ app.get("/menu", async (req,res) => {
                 balance=balance+Number(r.value),
                 entrances.push(r)
             }});
-
-console.log(balance);
          
         const registers={bankStatement:[...exits,...entrances],balance:balance};
         return res.send(registers);
