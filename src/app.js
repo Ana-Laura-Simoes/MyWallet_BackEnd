@@ -1,28 +1,18 @@
 import express from 'express';
 import cors from 'cors';
-import pg from 'pg';
+//import pg from 'pg';
 import bcrypt from 'bcrypt';
 import dayjs from 'dayjs';
-import {RegisterSchema} from "./schemas/RegisterSchema.js";
-import{SignUpSchema} from "./schemas/SignUpSchema.js";
-import{SignInSchema} from "./schemas/SignInSchema.js";
-
+import {RegisterSchema} from "../schemas/RegisterSchema.js";
+import{SignUpSchema} from "../schemas/SignUpSchema.js";
+import{SignInSchema} from "../schemas/SignInSchema.js";
 import { v4 as uuid } from 'uuid';
 
+import connection from './database/database.js';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-const { Pool } = pg;
-const databaseConnection = {
-    user: 'postgres',
-    password: '105881',
-    host: 'localhost',
-    port: 5432,
-    database: 'meubanco'
-  };
-const connection = new Pool(databaseConnection);
 
 async function HandleData(data,res,type,userId){
     let {value,description}=data;    
@@ -130,6 +120,43 @@ catch(e){
 });
 
 
+
+app.delete("/logOut", async (req,res) => {
+    const authorization = req.headers['authorization'];
+    const token = authorization?.replace('Bearer ', '');
+    
+    if(!token) return res.sendStatus(401);
+
+
+    try{
+    const result = await connection.query(`
+    SELECT * FROM sessions
+    JOIN users
+    ON sessions."userId" = users.id
+    WHERE sessions.token = $1
+  `, [token]);
+
+  const user = result.rows[0];
+  
+  if(user) {
+    const deleteToken = await connection.query(`
+    DELETE FROM sessions WHERE sessions.token = $1
+  `, [token]);
+  return res.sendStatus(200);
+  } else {
+    res.sendStatus(401);
+  }
+}catch(e){
+    console.log(e);
+    return res.sendStatus(500);
+}
+    });
+
+
+
+
+
+
 app.post("/entrance", async (req,res) => {
     const authorization = req.headers['authorization'];
     const token = authorization?.replace('Bearer ', '');
@@ -214,6 +241,7 @@ app.get("/home", async (req,res) => {
          
         const registers={bankStatement:[...exits,...entrances],balance:balance};
         return res.send(registers);
+       
     }
     else {
         res.sendStatus(401);
@@ -227,10 +255,8 @@ app.get("/home", async (req,res) => {
 
 
 
+  //
+
+export default app;
 
 
-
-
-app.listen(4000, () =>{
-    console.log("Rodando servidor");
-});
