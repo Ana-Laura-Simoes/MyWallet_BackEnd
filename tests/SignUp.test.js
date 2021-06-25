@@ -6,7 +6,8 @@ beforeAll(async () => {
     await connection.query(`DELETE FROM users`);
   });
 
-afterAll(() => {
+afterAll(async() => {
+    await connection.query(`DELETE FROM users`);
     connection.end();
 });
 
@@ -67,4 +68,59 @@ describe("POST /signUp", () => {
           
           expect(status).toEqual(409);
     });
+});
+
+describe("POST /signIn", () => {
+    it("returns 201 for valid params", async () => {
+        const body = {
+            email: 'j.@gmail.com',
+            password: '1'
+          };
+          const expected={
+            id:"",
+            name:"",
+            email:"",
+            token:""
+          }
+        
+          const result = await supertest(app).post("/signIn").send(body);
+          const status = result.status;
+          //console.log(result.text);
+
+          
+          expect(JSON.parse(result.text)).toEqual(
+            expect.objectContaining({
+                "email": "j.@gmail.com", "id": expect.any(Number), "name": "joaozinho", "token" : expect.any(String)
+            })
+
+    );
+});
+
+
+    it("returns 400 for invalid params", async () => {
+        const body = {
+            email: 'j.@gmail.com',
+            password: '',
+          };
+        
+          const result = await supertest(app).post("/signIn").send(body);
+          const status = result.status;
+          
+          expect(status).toEqual(400);
+    });
+
+
+    it("returns 401 for invalid login params", async () => {
+        const body = {
+            email: 'j.@gmail.',
+            password: '1',
+          };
+        
+          const result = await supertest(app).post("/signIn").send(body);
+          const status = result.status;
+          
+          expect(status).toEqual(401);
+    });
+    
+
 });
