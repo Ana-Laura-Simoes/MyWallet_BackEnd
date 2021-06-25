@@ -7,7 +7,6 @@ beforeAll(async () => {
   });
 
 afterAll(async() => {
-    await connection.query(`DELETE FROM users`);
     connection.end();
 });
 
@@ -27,7 +26,7 @@ describe("POST /signUp", () => {
     });
 
 
-    it("returns 400 for invalid params", async () => {
+    it("returns 400 for invalid params(unfilled field)", async () => {
         const body = {
             name: 'joaozinho',
             email: 'j.@gmail.com',
@@ -41,7 +40,7 @@ describe("POST /signUp", () => {
           expect(status).toEqual(400);
     });
     
-    it("returns 400 for invalid params", async () => {
+    it("returns 400 for invalid params(diferent passwords)", async () => {
         const body = {
             name: 'joaozinho',
             email: 'j.@gmail.com',
@@ -75,14 +74,7 @@ describe("POST /signIn", () => {
         const body = {
             email: 'j.@gmail.com',
             password: '1'
-          };
-          const expected={
-            id:"",
-            name:"",
-            email:"",
-            token:""
-          }
-        
+          };        
           const result = await supertest(app).post("/signIn").send(body);
           const status = result.status;
           //console.log(result.text);
@@ -97,7 +89,7 @@ describe("POST /signIn", () => {
 });
 
 
-    it("returns 400 for invalid params", async () => {
+    it("returns 400 for invalid params(unfilled field)", async () => {
         const body = {
             email: 'j.@gmail.com',
             password: '',
@@ -110,7 +102,7 @@ describe("POST /signIn", () => {
     });
 
 
-    it("returns 401 for invalid login params", async () => {
+    it("returns 401 for invalid user params", async () => {
         const body = {
             email: 'j.@gmail.',
             password: '1',
@@ -124,3 +116,35 @@ describe("POST /signIn", () => {
     
 
 });
+
+
+/*
+describe("DELETE /logOut", () => {
+    it("returns 200 for valid token", async () => {
+        const body = {
+            email: 'j.@gmail.com',
+            password: '1'
+          };        
+          const user = await supertest(app).post("/signIn").send(body);
+          
+          const {token}=user.body;
+          console.log(token);
+
+          const response = await supertest(app).delete("/logOut").set('Authorization', `Bearer ${token}`);
+          expect(response.status).toEqual(200);    
+});
+
+it("returns 401 for invalid token", async () => {
+
+      const response = await supertest(app).delete("/logOut").set('Authorization', `Bearer token123`);
+      expect(response.status).toEqual(401);    
+});
+
+it("returns 400 for null token", async () => {
+
+    const response = await supertest(app).delete("/logOut");
+    expect(response.status).toEqual(400);    
+});
+
+});
+*/

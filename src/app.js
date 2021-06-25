@@ -22,8 +22,9 @@ async function HandleData(data,res,type,userId){
     
     
     const errors = RegisterSchema.validate(data).error;
-    console.log(errors)
+   
     if(errors) {
+        console.log(errors)
         return res.sendStatus(400);
     }
     
@@ -38,7 +39,7 @@ async function HandleData(data,res,type,userId){
     }
     //console.log(value);
     
-    res.sendStatus(201);
+    return res.sendStatus(201);
 }
 
 
@@ -123,11 +124,8 @@ catch(e){
 
 app.delete("/logOut", async (req,res) => {
     const authorization = req.headers['authorization'];
-    const token = authorization?.replace('Bearer ', '');
-    
-    if(!token) return res.sendStatus(401);
-
-
+    const token = authorization?.replace('Bearer ', '');    
+    if(!token) return res.sendStatus(400);
     try{
     const result = await connection.query(`
     SELECT * FROM sessions
@@ -143,6 +141,7 @@ app.delete("/logOut", async (req,res) => {
     DELETE FROM sessions WHERE sessions.token = $1
   `, [token]);
   return res.sendStatus(200);
+
   } else {
     res.sendStatus(401);
   }
@@ -161,8 +160,8 @@ app.post("/entrance", async (req,res) => {
     const authorization = req.headers['authorization'];
     const token = authorization?.replace('Bearer ', '');
     
-    if(!token) return res.sendStatus(401);
-
+    if(!token) return res.sendStatus(400);
+try{
     const result = await connection.query(`
     SELECT * FROM sessions
     JOIN users
@@ -177,6 +176,11 @@ app.post("/entrance", async (req,res) => {
   } else {
     res.sendStatus(401);
   }
+}
+catch(error){
+    console.log(error);
+    return res.sendStatus(500);
+}
 
 });
 
@@ -185,8 +189,9 @@ app.post("/exit", async (req,res) => {
     const authorization = req.headers['authorization'];
     const token = authorization?.replace('Bearer ', '');
     
-    if(!token) return res.sendStatus(401);
+    if(!token) return res.sendStatus(400);
 
+    try{
     const result = await connection.query(`
     SELECT * FROM sessions
     JOIN users
@@ -199,7 +204,11 @@ app.post("/exit", async (req,res) => {
   if(user) {
     HandleData(req.body,res,"exit",user.id);
   } else {
-    res.sendStatus(401);
+    return res.sendStatus(401);
+  }}
+  catch(e){
+console.log(e);
+return res.sendStatus(500);
   }
     });
 
@@ -208,7 +217,7 @@ app.get("/home", async (req,res) => {
     const authorization = req.headers['authorization'];
     const token = authorization?.replace('Bearer ', '');
     
-    if(!token) return res.sendStatus(401);
+    if(!token) return res.sendStatus(400);
 
     try{
     const TokenResult = await connection.query(`
@@ -252,10 +261,6 @@ app.get("/home", async (req,res) => {
     }
     });
 
-
-
-
-  //
 
 export default app;
 
