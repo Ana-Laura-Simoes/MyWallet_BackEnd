@@ -6,7 +6,7 @@ const databaseConnection = {
     password: '105881',
     host: 'localhost',
     port: 5432,
-    database: 'meubanco'
+    database: process.env.NODE_ENV === "test" ? "meubancotest" : "meubanco"
   };
 const connection = new Pool(databaseConnection);
 
