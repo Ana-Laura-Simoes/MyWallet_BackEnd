@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import faker from "faker/locale/pt_BR";
 import{ getRepository } from "typeorm";
 import User from "../../src/entities/User";
+import Session from "../../src/entities/Session";
 
 interface user{
   name: string,
@@ -26,4 +27,17 @@ export async function createUser(user:user): Promise <User> {
   const newUser = await getRepository(User).create({name:name,email:email,password:hashedPassword});
   await getRepository(User).save(newUser);
   return newUser;
+}
+
+export async function getSessions() :Promise <Session[]>{
+  const sessions = getRepository(Session).find();
+ return sessions;
+}
+
+export async function lastSession() :Promise <Session> {
+  const repository = getRepository(Session);
+  const lastSession = await repository.createQueryBuilder('sessions').
+  orderBy('id','ASC').getOne();
+  return lastSession;
+  
 }
