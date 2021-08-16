@@ -16,6 +16,7 @@ app.use(error);
 
 
 app.post("/sign-up", userController.signUp);
+app.post("/sign-in", userController.signIn);
 
 
 export async function init () {
