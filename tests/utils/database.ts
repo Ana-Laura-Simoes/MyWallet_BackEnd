@@ -1,7 +1,5 @@
-import { getRepository } from "typeorm";
-
-import User from "../../src/entities/User";
+import {getManager } from "typeorm";
 
 export async function clearDatabase () {
-  await getRepository(User).delete({});
+  await getManager().query(`TRUNCATE "users" RESTART IDENTITY CASCADE`);
 }

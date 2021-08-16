@@ -5,6 +5,8 @@ import app, { init } from "../../src/app";
 import { createUser } from "../factories/userFactory";
 import { clearDatabase } from "../utils/database";
 
+import * as userFactory from "../factories/userFactory";
+
 beforeAll(async () => {
   await init();
 });
@@ -14,23 +16,36 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
+  await clearDatabase();
   await getConnection().close();
 });
 
-describe("GET /users", () => {
-  it("should answer with text \"OK!\" and status 200", async () => {
-    const user = await createUser();
+const agent = supertest(app);
 
-    const response = await supertest(app).get("/users");
-    
-    expect(response.body).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          email: user.email
-        })
-      ])
-    );
+describe("POST /sign-up", () => {
 
-    expect(response.status).toBe(200);
+
+  it("returns status 400 for empty params", async () => {
+    const body = {};
+
+    const result = await agent.post("/sign-up").send(body);
+
+    expect(result.status).toEqual(400);
+  });
+
+  it("returns status 201 for valid params", async () => {
+    const body = userFactory.generateValidBody();
+
+    const result = await agent.post("/sign-up").send(body);
+
+    expect(result.status).toEqual(201);
+  });
+
+  it("returns status 409 for conflicted email", async () => {
+    const body = userFactory.generateValidBody();
+    const conflictedUser = await userFactory.createUser(body);
+    const result = await agent.post("/sign-up").send(body);
+    expect(result.status).toEqual(409);
   });
 });
+

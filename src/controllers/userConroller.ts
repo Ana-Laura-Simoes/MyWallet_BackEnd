@@ -20,7 +20,7 @@ export async function signUp(req:Request, res:Response) {
           return res.sendStatus(400);
       }        
 
-      const user = await userService.SignUp({name,email,password});
+     const user = await userService.SignUp({name,email,password});
      if(!user) return res.sendStatus(409);
      return res.sendStatus(201);
   }

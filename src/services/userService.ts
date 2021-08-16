@@ -13,7 +13,7 @@ interface user{
 export async function SignUp(user:user):Promise <Boolean> {
   const conflictedUser = await getByEmail(user.email);
   if(conflictedUser) return false;
-  
+
   else{
     await create(user);
     return true; 
