@@ -2,9 +2,7 @@ import supertest from "supertest";
 import { getConnection } from "typeorm";
 
 import app, { init } from "../../src/app";
-import { createUser } from "../factories/userFactory";
 import { clearDatabase } from "../utils/database";
-
 import * as userFactory from "../factories/userFactory";
 
 beforeAll(async () => {
@@ -43,7 +41,7 @@ describe("POST /sign-up", () => {
 
   it("returns status 409 for conflicted email", async () => {
     const body = userFactory.generateValidBody();
-    const conflictedUser = await userFactory.createUser(body);
+    await userFactory.createUser(body);
     const result = await agent.post("/sign-up").send(body);
     expect(result.status).toEqual(409);
   });
