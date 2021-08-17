@@ -7,24 +7,27 @@ interface transaction {
     userId: number,
     value: any,
     description: string,
-    type: string
+    type: any
 }
 
-export async function entrance (req: Request, res: Response){
-    const userId  = res.locals.userId;
-    const transaction :transaction ={
-     userId:userId,
-     value: req.body.value,
-     description:req.body.description,
-     type:"entrance"
-    }
-    const result = await newTransaction(transaction);
-    if (!result) return res.sendStatus(400);
-    
-    return res.sendStatus(201);
-  }
 
-  async function newTransaction(transaction:transaction){
+export async function newTransactions (req:Request,res:Response)  {
+    const userId  = res.locals.userId;
+    const type =req.route.path;
+    const transaction :transaction = {
+        userId:userId,
+        value: req.body.value,
+        description:req.body.description,
+        type: type.replace('/','')
+       }
+       const result = await validateAndCreateTransaction(transaction);
+       if (!result) return res.sendStatus(400);
+       
+       return res.sendStatus(201);
+  }
+    
+
+  async function validateAndCreateTransaction(transaction:transaction){
     const errors = transactionSchema.validate(transaction).error;
    
     if(errors) {
@@ -43,5 +46,3 @@ export async function entrance (req: Request, res: Response){
        
     return true;
 }
-
-  

@@ -19,8 +19,8 @@ app.use(error);
 
 app.post("/sign-up", userController.signUp);
 app.post("/sign-in", userController.signIn);
-app.post("/entrance", authMiddleware ,transactionController.entrance);
-
+app.post("/entrance", authMiddleware ,transactionController.newTransactions);
+app.post("/exit", authMiddleware ,transactionController.newTransactions);
 
 
 export async function init () {
