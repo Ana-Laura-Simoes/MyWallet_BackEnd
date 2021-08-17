@@ -29,6 +29,17 @@ export async function createUser(user:user): Promise <User> {
   return newUser;
 }
 
+
+export async function createSession(userId:number):Promise<string>{     
+  const token = faker.internet.password();
+  
+  const repository = getRepository(Session);
+
+  const result = await repository.insert({token,userId});
+ 
+  return token;
+}
+
 export async function getSessions() :Promise <Session[]>{
   const sessions = getRepository(Session).find();
  return sessions;

@@ -10,7 +10,6 @@ export default async function authMiddleware(req: Request, res: Response, next: 
     const user = await userService.validateSession(token);
     
     if (!user) {
-      console.log("aqui");
       return res.sendStatus(401);
     } else {  
       res.locals.userId = user.id;  
