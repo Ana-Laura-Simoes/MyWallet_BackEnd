@@ -6,8 +6,10 @@ import "reflect-metadata";
 
 import connectDatabase from "./database";
 
-import {error} from "../src/middlewares/errorMiddlewares";
-import * as userController from "./controllers/userConroller";
+import error from "../src/middlewares/errorMiddlewares";
+import authMiddleware from "../src/middlewares/authMiddleware";
+import * as userController from "./controllers/userController";
+import * as transactionController from "./controllers/transactionController";
 
 const app = express();
 app.use(cors());
@@ -17,6 +19,8 @@ app.use(error);
 
 app.post("/sign-up", userController.signUp);
 app.post("/sign-in", userController.signIn);
+app.post("/entrance", authMiddleware ,transactionController.entrance);
+
 
 
 export async function init () {

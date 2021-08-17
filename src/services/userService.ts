@@ -1,4 +1,3 @@
-import { Request, Response } from "express";
 import { getRepository } from "typeorm";
 import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
@@ -35,6 +34,17 @@ export async function SignIn(user:{email:string, password:string}){
   else {
     return false
   }
+}
+
+export async function validateSession(token:string){
+  const repository = getRepository(Session);
+  const session = await repository.findOne({
+    where:{token}, relations: ["user"] });
+    if(!session) {
+      return false;
+    } else {
+      return session.user;
+    }
 }
 
 async function create(newUser:user) {
