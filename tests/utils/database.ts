@@ -1,5 +1,5 @@
-import {getManager } from "typeorm";
+import { getManager } from "typeorm";
 
-export async function clearDatabase () {
+export async function clearDatabase() {
   await getManager().query(`TRUNCATE "users" RESTART IDENTITY CASCADE`);
 }

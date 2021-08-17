@@ -24,112 +24,119 @@ const agent = supertest(app);
 async function createValidUser() {
   const body = userFactory.generateValidBody();
   await userFactory.createUser(body);
-  const token = await userFactory.createSession(1); 
+  const token = await userFactory.createSession(1);
   return token;
 }
 
 describe("GET /transactions", () => {
-
   it("returns 401 for invalid token", async () => {
-    const result = await supertest(app).get("/transactions").set('Authorization', `Bearer invalidToken`);
-    expect(result.status).toEqual(401);    
-});
+    const result = await supertest(app)
+      .get("/transactions")
+      .set("Authorization", `Bearer invalidToken`);
+    expect(result.status).toEqual(401);
+  });
 
-    it("returns 200 for authenticated user", async () => {
-      const token = await createValidUser();
-      const result = await supertest(app)
-        .get("/transactions")
-        .set("Authorization",`Bearer ${token}`);
-      expect(result.status).toEqual(200);
-      expect(result.body).toEqual(
-        expect.objectContaining({
-            "bankStatement": expect.any(Array), "balance": expect.any(Number)
-        }));
+  it("returns 200 for authenticated user", async () => {
+    const token = await createValidUser();
+    const result = await supertest(app)
+      .get("/transactions")
+      .set("Authorization", `Bearer ${token}`);
+    expect(result.status).toEqual(200);
+    expect(result.body).toEqual(
+      expect.objectContaining({
+        bankStatement: expect.any(Array),
+        balance: expect.any(Number),
+      })
+    );
+  });
 });
-});
-
 
 describe("POST /entrance", () => {
   it("returns 401 for invalid token", async () => {
-      const result= await supertest(app).post("/entrance").set('Authorization', `Bearer invalidToken`);
-      expect(result.status).toEqual(401);    
-});
+    const result = await supertest(app)
+      .post("/entrance")
+      .set("Authorization", `Bearer invalidToken`);
+    expect(result.status).toEqual(401);
+  });
 
-it("returns 200 for authenticated user", async () => {
-  const token = await createValidUser();
-  const body = await transactionFactory.generateValidBody();
-  
-  const beforeTransaction = await transactionFactory.getTransactions(1);
-  expect(beforeTransaction.length).toEqual(0);
+  it("returns 200 for authenticated user", async () => {
+    const token = await createValidUser();
+    const body = await transactionFactory.generateValidBody();
 
-  const result = await supertest(app)
-    .post("/entrance")
-    .send(body)
-    .set("Authorization",`Bearer ${token}`);
-  expect(result.status).toEqual(201);
+    const beforeTransaction = await transactionFactory.getTransactions(1);
+    expect(beforeTransaction.length).toEqual(0);
 
-  const afterTransaction = await transactionFactory.getTransactions(1);
-  expect(afterTransaction.length).toEqual(1);
-});
+    const result = await supertest(app)
+      .post("/entrance")
+      .send(body)
+      .set("Authorization", `Bearer ${token}`);
+    expect(result.status).toEqual(201);
 
+    const afterTransaction = await transactionFactory.getTransactions(1);
+    expect(afterTransaction.length).toEqual(1);
+  });
 
-it("returns 400 for empty body", async () => {
-  const token = await createValidUser();
-  const result = await supertest(app)
-    .post("/entrance")
-    .send({})
-    .set("Authorization",`Bearer ${token}`);
-  expect(result.status).toEqual(400);
-});
-
-it("returns 400 for invalid invalid body", async () => {
-  const token = await createValidUser();
-  const body = await transactionFactory.generateInvalidBody();
-    const result= await supertest(app).post("/entrance").send(body).set('Authorization', `Bearer ${token}`);
+  it("returns 400 for empty body", async () => {
+    const token = await createValidUser();
+    const result = await supertest(app)
+      .post("/entrance")
+      .send({})
+      .set("Authorization", `Bearer ${token}`);
     expect(result.status).toEqual(400);
+  });
 
+  it("returns 400 for invalid invalid body", async () => {
+    const token = await createValidUser();
+    const body = await transactionFactory.generateInvalidBody();
+    const result = await supertest(app)
+      .post("/entrance")
+      .send(body)
+      .set("Authorization", `Bearer ${token}`);
+    expect(result.status).toEqual(400);
+  });
 });
-});
-
 
 describe("POST /exit", () => {
   it("returns 401 for invalid token", async () => {
-      const result= await supertest(app).post("/exit").set('Authorization', `Bearer invalidToken`);
-      expect(result.status).toEqual(401);    
-});
+    const result = await supertest(app)
+      .post("/exit")
+      .set("Authorization", `Bearer invalidToken`);
+    expect(result.status).toEqual(401);
+  });
 
-it("returns 200 for authenticated user", async () => {
-  const token = await createValidUser();
-  const body = await transactionFactory.generateValidBody();
-  
-  const beforeTransaction = await transactionFactory.getTransactions(1);
-  expect(beforeTransaction.length).toEqual(0);
+  it("returns 200 for authenticated user", async () => {
+    const token = await createValidUser();
+    const body = await transactionFactory.generateValidBody();
 
-  const result = await supertest(app)
-    .post("/exit")
-    .send(body)
-    .set("Authorization",`Bearer ${token}`);
-  expect(result.status).toEqual(201);
+    const beforeTransaction = await transactionFactory.getTransactions(1);
+    expect(beforeTransaction.length).toEqual(0);
 
-  const afterTransaction = await transactionFactory.getTransactions(1);
-  expect(afterTransaction.length).toEqual(1);
-});
+    const result = await supertest(app)
+      .post("/exit")
+      .send(body)
+      .set("Authorization", `Bearer ${token}`);
+    expect(result.status).toEqual(201);
 
+    const afterTransaction = await transactionFactory.getTransactions(1);
+    expect(afterTransaction.length).toEqual(1);
+  });
 
-it("returns 400 for empty body", async () => {
-  const token = await createValidUser();
-  const result = await supertest(app)
-    .post("/exit")
-    .send({})
-    .set("Authorization",`Bearer ${token}`);
-  expect(result.status).toEqual(400);
-});
-
-it("returns 400 for invalid invalid body", async () => {
-  const token = await createValidUser();
-  const body = await transactionFactory.generateInvalidBody();
-    const result = await supertest(app).post("/exit").send(body).set('Authorization', `Bearer ${token}`);
+  it("returns 400 for empty body", async () => {
+    const token = await createValidUser();
+    const result = await supertest(app)
+      .post("/exit")
+      .send({})
+      .set("Authorization", `Bearer ${token}`);
     expect(result.status).toEqual(400);
+  });
 
-});
+  it("returns 400 for invalid invalid body", async () => {
+    const token = await createValidUser();
+    const body = await transactionFactory.generateInvalidBody();
+    const result = await supertest(app)
+      .post("/exit")
+      .send(body)
+      .set("Authorization", `Bearer ${token}`);
+    expect(result.status).toEqual(400);
+  });
 });

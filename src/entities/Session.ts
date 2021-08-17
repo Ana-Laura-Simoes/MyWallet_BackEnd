@@ -13,5 +13,5 @@ export default class Session {
   userId: number;
 
   @ManyToOne(() => User)
-  user: User
+  user: User;
 }

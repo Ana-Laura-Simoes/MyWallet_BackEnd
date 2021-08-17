@@ -4,50 +4,55 @@ import dayjs from "dayjs";
 import * as transactionService from "../services/transactionService";
 
 interface transaction {
-    userId: number,
-    value: any,
-    description: string,
-    type: any
+  userId: number;
+  value: any;
+  description: string;
+  type: any;
 }
 
+export async function newTransactions(req: Request, res: Response) {
+  const userId = res.locals.userId;
+  const type = req.route.path;
+  const transaction: transaction = {
+    userId: userId,
+    value: req.body.value,
+    description: req.body.description,
+    type: type.replace("/", ""),
+  };
+  const result = await validateAndCreateTransaction(transaction);
+  if (!result) return res.sendStatus(400);
 
-export async function newTransactions (req:Request,res:Response)  {
-    const userId  = res.locals.userId;
-    const type =req.route.path;
-    const transaction :transaction = {
-        userId:userId,
-        value: req.body.value,
-        description:req.body.description,
-        type: type.replace('/','')
-       }
-       const result = await validateAndCreateTransaction(transaction);
-       if (!result) return res.sendStatus(400);
-       
-       return res.sendStatus(201);
+  return res.sendStatus(201);
+}
+
+export async function getTransactions(req: Request, res: Response) {
+  const userId = res.locals.userId;
+  const result = await transactionService.getById(userId);
+  return res.send(result);
+}
+
+async function validateAndCreateTransaction(transaction: transaction) {
+  const errors = transactionSchema.validate(transaction).error;
+
+  if (errors) {
+    return false;
   }
 
-  export async function getTransactions(req:Request,res:Response){
-    const userId  = res.locals.userId;
-    const result = await transactionService.getById(userId);
-    return res.send(result);    
-  }
-    
+  let { userId, value, description, type } = transaction;
+  let date = dayjs().format("DD/MM");
 
-  async function validateAndCreateTransaction(transaction:transaction){
-    const errors = transactionSchema.validate(transaction).error;
-   
-    if(errors) {
-        return false;
-    }
+  const adjustedValue = Number(value).toFixed(2);
 
-    let {userId,value,description,type}=transaction;    
-    let date=dayjs().format('DD/MM');   
+  const adjustedDescription =
+    description[0].toUpperCase() + description.substr(1);
 
-    const adjustedValue = Number(value).toFixed(2);
-        
-    const adjustedDescription=description[0].toUpperCase()+description.substr(1);
-    
-    await transactionService.create({userId, value:adjustedValue ,description: adjustedDescription ,date,type})
-       
-    return true;
+  await transactionService.create({
+    userId,
+    value: adjustedValue,
+    description: adjustedDescription,
+    date,
+    type,
+  });
+
+  return true;
 }

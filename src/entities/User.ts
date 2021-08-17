@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column , OneToMany} from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import Transaction from "../entities/Transaction";
 
 @Entity("users")
@@ -15,7 +15,6 @@ export default class User {
   @Column()
   password: string;
 
-  @OneToMany(() => Transaction, transactions => transactions.user)
+  @OneToMany(() => Transaction, (transactions) => transactions.user)
   transactions: Transaction[];
-
 }

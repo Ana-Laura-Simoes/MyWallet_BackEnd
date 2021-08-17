@@ -16,16 +16,14 @@ app.use(cors());
 app.use(express.json());
 app.use(error);
 
-
 app.post("/sign-up", userController.signUp);
 app.post("/sign-in", userController.signIn);
-app.post("/sign-out", authMiddleware ,userController.signOut);
-app.post("/entrance", authMiddleware ,transactionController.newTransactions);
-app.post("/exit", authMiddleware ,transactionController.newTransactions);
+app.post("/sign-out", authMiddleware, userController.signOut);
+app.post("/entrance", authMiddleware, transactionController.newTransactions);
+app.post("/exit", authMiddleware, transactionController.newTransactions);
 app.get("/transactions", authMiddleware, transactionController.getTransactions);
 
-
-export async function init () {
+export async function init() {
   await connectDatabase();
 }
 
