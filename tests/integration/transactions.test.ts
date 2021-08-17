@@ -5,7 +5,6 @@ import app, { init } from "../../src/app";
 import { clearDatabase } from "../utils/database";
 import * as userFactory from "../factories/userFactory";
 import * as transactionFactory from "../factories/transactionFactory";
-import transactionSchema from "../../src/schemas/transactionsSchemas";
 
 beforeAll(async () => {
   await init();

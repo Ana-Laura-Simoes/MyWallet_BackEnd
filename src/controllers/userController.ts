@@ -38,3 +38,13 @@ export async function signUp(req:Request, res:Response) {
 
     }
 
+     export async function signOut (req:Request,res:Response) {
+      const authorization = req.headers['authorization'];
+      const token = authorization?.split("Bearer ")[1];
+      const userId  = res.locals.userId;
+
+      const result =  await userService.deleteSession(token,userId);
+
+      return res.sendStatus(200); 
+  }
+      

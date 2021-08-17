@@ -1,4 +1,4 @@
-import { getRepository } from "typeorm";
+import { getRepository,getConnection } from "typeorm";
 import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
 
@@ -47,6 +47,18 @@ export async function validateSession(token:string){
     }
 }
 
+export async function deleteSession (token:string,userId:number){
+  
+  const result = await getConnection()
+  .createQueryBuilder()
+  .delete()
+  .from(Session)
+  .where("token = :token", { token })
+  .execute();
+
+return result;
+}
+
 async function create(newUser:user) {
   const {name,email,password} = newUser;
   const repository = getRepository(User);
@@ -66,3 +78,4 @@ async function createSession(userId:number, token:string) {
   const result = await repository.insert({token,userId});
   return result;
 }
+

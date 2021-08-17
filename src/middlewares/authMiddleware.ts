@@ -12,7 +12,7 @@ export default async function authMiddleware(req: Request, res: Response, next: 
     if (!user) {
       return res.sendStatus(401);
     } else {  
-      res.locals.userId = user.id;  
+      res.locals.userId = user.id;        
       next();
     }
 }
