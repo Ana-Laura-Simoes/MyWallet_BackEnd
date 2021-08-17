@@ -25,6 +25,12 @@ export async function newTransactions (req:Request,res:Response)  {
        
        return res.sendStatus(201);
   }
+
+  export async function getTransactions(req:Request,res:Response){
+    const userId  = res.locals.userId;
+    const result = await transactionService.getById(userId);
+    return res.send(result);    
+  }
     
 
   async function validateAndCreateTransaction(transaction:transaction){

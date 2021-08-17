@@ -21,6 +21,7 @@ app.post("/sign-up", userController.signUp);
 app.post("/sign-in", userController.signIn);
 app.post("/entrance", authMiddleware ,transactionController.newTransactions);
 app.post("/exit", authMiddleware ,transactionController.newTransactions);
+app.get("/transactions", authMiddleware, transactionController.getTransactions);
 
 
 export async function init () {
