@@ -114,3 +114,30 @@ describe("POST /sign-in", () => {
     expect(result.status).toEqual(401);
   });
 });
+
+
+
+
+describe("POST /sign-in", () => {
+
+  it("returns 401 for invalid token", async () => {
+    const result = await supertest(app).post("/sign-out").set('Authorization', `Bearer invalidToken`);
+    expect(result.status).toEqual(401);    
+});
+  it("returns status 200 for authenticated user", async () => {
+    const user = userFactory.generateValidBody();
+    await userFactory.createUser(user);
+    const token = await userFactory.createSession(1); 
+
+    const beforeSignOut = await userFactory.getSessions();
+    expect(beforeSignOut.length).toEqual(1);
+
+    const result = await supertest(app).post("/sign-out").set('Authorization', `Bearer ${token}`);
+    expect(result.status).toEqual(200);  
+    
+    const AfterSessions = await userFactory.getSessions();
+    expect(AfterSessions.length).toEqual(0);
+    
+  });
+
+});

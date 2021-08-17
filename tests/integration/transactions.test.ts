@@ -31,8 +31,8 @@ async function createValidUser() {
 describe("GET /transactions", () => {
 
   it("returns 401 for invalid token", async () => {
-    const response = await supertest(app).get("/transactions").set('Authorization', `Bearer invalidToken`);
-    expect(response.status).toEqual(401);    
+    const result = await supertest(app).get("/transactions").set('Authorization', `Bearer invalidToken`);
+    expect(result.status).toEqual(401);    
 });
 
     it("returns 200 for authenticated user", async () => {
@@ -85,8 +85,8 @@ it("returns 400 for empty body", async () => {
 it("returns 400 for invalid invalid body", async () => {
   const token = await createValidUser();
   const body = await transactionFactory.generateInvalidBody();
-    const response = await supertest(app).post("/entrance").send(body).set('Authorization', `Bearer ${token}`);
-    expect(response.status).toEqual(400);
+    const result= await supertest(app).post("/entrance").send(body).set('Authorization', `Bearer ${token}`);
+    expect(result.status).toEqual(400);
 
 });
 });
@@ -128,8 +128,8 @@ it("returns 400 for empty body", async () => {
 it("returns 400 for invalid invalid body", async () => {
   const token = await createValidUser();
   const body = await transactionFactory.generateInvalidBody();
-    const response = await supertest(app).post("/exit").send(body).set('Authorization', `Bearer ${token}`);
-    expect(response.status).toEqual(400);
+    const result = await supertest(app).post("/exit").send(body).set('Authorization', `Bearer ${token}`);
+    expect(result.status).toEqual(400);
 
 });
 });

@@ -37,7 +37,6 @@ export async function newTransactions (req:Request,res:Response)  {
     const errors = transactionSchema.validate(transaction).error;
    
     if(errors) {
-        console.log(errors)
         return false;
     }
 
