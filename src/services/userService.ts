@@ -28,7 +28,7 @@ export async function SignIn(user: { email: string; password: string }) {
   if (bcrypt.compareSync(user.password, existingUser.password)) {
     const token = uuid();
     await createSession(existingUser.id, token);
-    return token;
+    return { id: existingUser.id, name: existingUser.name, token: token };
   } else {
     return false;
   }
