@@ -25,43 +25,49 @@ The following tools and frameworks were used in the construction of the project:
   
 ## How to run
 
-1. Clone this repository
+1. Clone the front-end repository at https://github.com/Ana-Laura-Simoes/my-wallet
+2. Follow instructions to run front-end at https://github.com/Ana-Laura-Simoes/my-wallet
+3. Clone this repository
+4. Open the folder created
 ```bash
-git clone https://github.com/Ana-Laura-Simoes/my-wallet.git
+cd my-wallet-back
 ```
-2. Clone the front-end repository at https://github.com/Ana-Laura-Simoes/my-wallet
-3. Follow instructions to run front-end at https://github.com/Ana-Laura-Simoes/my-wallet
-4. Create a Database using the ``dump.sql`` file inside the ``database`` folder by following these steps:
-    - 4.1 Open your terminal. **Important: the terminal must be opened in the same path as the ``dump.sql`` file is located.**
-    - 4.2 Access PostgreSQL using the command ``sudo su postgres`` and enter your password when prompted.
-    - 4.3 Next, type ``psql postgres`` and hit enter.
-    - 4.4 Create a database by typing ``CREATE DATABASE mywallet;`` and hitting enter.
-    - 4.5 Type ``\q`` and hit enter.
-    - 4.6 Finally, type ```psql mywallet < dump.sql``` and hit enter. Your database should be ready after this step.
-5. Set the environment variables by following these steps:
-    - 5.1 Create a ``.env`` file in the folder root
-    - 5.2 Copy the content of the ``.env.example`` into it
-    - 5.3 Set the ``DATABASE_URL`` in this format: "postgres://user:password@host:port/mywallet"
-    - 5.4 Set the ``PORT`` for 4000
-6. In your terminal, go back to the root folder and install the dependencies
+5. Install the dependencies
 ```bash
 npm i
 ```
-7. Also in the root folder, run the back-end with
+6. Create a new postgres database
+7. Set the environment variables :
+    - Create a ``.env`` file in the folder root
+    - Copy the content of the ``.env.example`` into it
+    - Set the ``DATABASE_URL`` in this format: "postgres://user:password@host:port/databaseName"
+    - Set the ``PORT`` for 4000
+    
+8. Create the database's tables
 ```bash
-npm start
+npm build
 ```
-8. Your server should be running now.
-9. After that, you can optionally test the project following these steps:
-    - 9.1 Open your terminal.
-    - 9.2 Access PostgreSQL using the command ``sudo su postgres`` and enter your password when prompted.
-    - 9.3 Next, type ``psql postgres`` and hit enter.
-    - 9.4 Create a test database by typing ``CREATE DATABASE mywallet_test TEMPLATE mywallet;`` and hitting enter. Your database test should be ready after this step.
-    - 9.5 Set the enviroment variable following the step 5 again, with the following changes:
-      - 9.5.1 The file must be called ``.env.test``
-      - 9.5.2 The ``DATABASE_URL`` must be in this format: "postgres://user:password@host:port/mywallet_test"
+```bash
+npm run typeorm migration:run
+```
 
-10. In your terminal, go to the root folder and run the tests with:
+9. Finally run the back-end with
+```bash
+npm run dev
+```
+10. Your server should be running now
+
+## How to run the tests
+1. Create a postgres database to run the tests (replace databaseName with the name of your current database)
+```bash
+CREATE DATABASE databaseName_test TEMPLATE databaseName;
+```
+2. Set the enviroment variables, with the following changes:
+    - Create a ``.env.test`` file in the folder root
+    - Copy the content of the ``.env`` into it
+    - Set the ``DATABASE_URL`` in this format: "postgres://user:password@host:port/databaseName_test"
+ 
+3. Run the tests with
 ```bash
 npm run test
-```
+``` 
