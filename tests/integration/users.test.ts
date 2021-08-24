@@ -91,7 +91,13 @@ describe("POST /sign-in", () => {
 
     const session = await userFactory.lastSession();
 
-    expect(result.text).toEqual(session.token);
+    expect(result.body).toEqual(
+      expect.objectContaining({
+        id: expect.any(Number),
+        name: user.name,
+        token: session.token,
+      })
+    );
   });
 
   it("returns status 401 for inexistent email", async () => {
